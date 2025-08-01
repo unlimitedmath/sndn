@@ -236,14 +236,15 @@ def main():
     """)
     
     # Abas principais
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "📊 Visão Geral",
         "🏢 Franquias Atuais",
         "🗺️ Mapas",
         "📈 Análise Completa",
         "🧮 Base de Cálculo",
         "💡 Insights Estratégicos",
-        "💰 Receita Franqueadora"
+        "💰 Receita Franqueadora",
+        "🏙️ Análise por Bairros"
     ])
     
     with tab1:
@@ -895,7 +896,8 @@ def main():
         ### **🎯 Benchmarks de Mercado:**
         """)
 
-        benchmark_data = pd.DataFrame({
+        import pandas as pd_local
+        benchmark_data = pd_local.DataFrame({
             'Rede': ['McDonald\'s', 'Subway', 'Burger King', 'Sofá Novo (Atual)', 'Sofá Novo (Potencial)'],
             'Unidades': [1000, 1500, 800, 195, 1294],
             'Cidades': [500, 400, 350, 128, 1030],
@@ -1717,6 +1719,711 @@ def main():
             file_name=f"simulacao_receita_franqueadora_{datetime.now().strftime('%Y%m%d')}.csv",
             mime="text/csv"
         )
+
+    with tab8:
+        st.header("🏙️ Análise por Bairros - Grandes Cidades")
+
+        # Carrega dados reais de população
+        @st.cache_data
+        def carregar_dados_bairros():
+            """Carrega dados reais de população por bairro"""
+            try:
+                df_pop = pd.read_csv('População_bairros_Sp - Página1.csv')
+                return df_pop
+            except:
+                return None
+
+        df_populacao = carregar_dados_bairros()
+
+        # Função para obter população real
+        def obter_populacao_real(nome_bairro):
+            """Obtém população real do bairro dos dados do SEADE"""
+            if df_populacao is not None:
+                # Tenta encontrar o bairro exato
+                match = df_populacao[df_populacao['REGIÃO'].str.contains(nome_bairro, case=False, na=False)]
+                if len(match) > 0:
+                    return int(match.iloc[0]['2023'])
+            return None
+
+        # Seletor de município
+        st.subheader("📍 Selecione a Cidade para Análise")
+
+        col_sel1, col_sel2 = st.columns([2, 1])
+
+        with col_sel1:
+            municipio_selecionado = st.selectbox(
+                "Escolha a cidade:",
+                [
+                    "São Paulo-SP",
+                    "Rio de Janeiro-RJ",
+                    "Brasília-DF",
+                    "Belo Horizonte-MG",
+                    "Salvador-BA",
+                    "Fortaleza-CE",
+                    "Porto Alegre-RS"
+                ],
+                index=0
+            )
+
+        with col_sel2:
+            st.info(f"""
+            **Critério de seleção:**
+            Cidades com 5+ franquias
+            padrão potenciais
+            """)
+
+        # Dados das franquias atuais por município
+        if municipio_selecionado == "São Paulo-SP":
+            # Dados das franquias atuais em SP
+            franquias_sp_atuais = [
+                {"bairro": "Jardim Anália Franco", "zona": "Zona Leste", "lat": -23.5200, "lon": -46.5600},
+                {"bairro": "Alto de Pinheiros", "zona": "Zona Oeste", "lat": -23.5450, "lon": -46.7100},
+                {"bairro": "Brooklin", "zona": "Zona Sul", "lat": -23.6100, "lon": -46.7000},
+                {"bairro": "Campo Belo", "zona": "Zona Sul", "lat": -23.6200, "lon": -46.6700},
+                {"bairro": "Freguesia do Ó", "zona": "Zona Norte", "lat": -23.4800, "lon": -46.7300},
+                {"bairro": "Higienópolis", "zona": "Centro", "lat": -23.5400, "lon": -46.6500},
+                {"bairro": "Interlagos", "zona": "Zona Sul", "lat": -23.6800, "lon": -46.6900},
+                {"bairro": "Ipiranga", "zona": "Zona Sul", "lat": -23.5900, "lon": -46.6100},
+                {"bairro": "Itaim Bibi", "zona": "Zona Oeste", "lat": -23.5900, "lon": -46.6800},
+                {"bairro": "Jabaquara", "zona": "Zona Sul", "lat": -23.6400, "lon": -46.6400},
+                {"bairro": "Jardim Paulista", "zona": "Centro", "lat": -23.5600, "lon": -46.6600},
+                {"bairro": "Jardins", "zona": "Centro", "lat": -23.5700, "lon": -46.6600},
+                {"bairro": "Lapa", "zona": "Zona Oeste", "lat": -23.5300, "lon": -46.7000},
+                {"bairro": "Moema", "zona": "Zona Sul", "lat": -23.6000, "lon": -46.6600},
+                {"bairro": "Perdizes", "zona": "Zona Oeste", "lat": -23.5400, "lon": -46.6900},
+                {"bairro": "Pinheiros", "zona": "Zona Oeste", "lat": -23.5600, "lon": -46.7000},
+                {"bairro": "Santana", "zona": "Zona Norte", "lat": -23.5100, "lon": -46.6300},
+                {"bairro": "Tatuapé", "zona": "Zona Leste", "lat": -23.5400, "lon": -46.5700},
+                {"bairro": "Vila Andrade", "zona": "Zona Sul", "lat": -23.6300, "lon": -46.7200},
+                {"bairro": "Vila Clementino", "zona": "Zona Sul", "lat": -23.5900, "lon": -46.6400},
+                {"bairro": "Vila Leopoldina", "zona": "Zona Oeste", "lat": -23.5300, "lon": -46.7400},
+                {"bairro": "Vila Mariana", "zona": "Zona Sul", "lat": -23.5800, "lon": -46.6400},
+                {"bairro": "Vila Prudente", "zona": "Zona Leste", "lat": -23.5800, "lon": -46.5800},
+                {"bairro": "Vila Romana", "zona": "Zona Oeste", "lat": -23.5300, "lon": -46.7200},
+                {"bairro": "Tucuruvi", "zona": "Zona Norte", "lat": -23.4600, "lon": -46.6000},
+                {"bairro": "Morumbi", "zona": "Zona Sul", "lat": -23.6200, "lon": -46.7000}
+            ]
+
+            # Bairros candidatos para expansão (com dados reais quando disponíveis)
+            bairros_candidatos = [
+                # Zona Sul (Alta Renda)
+                {"bairro": "Campo Grande", "zona": "Zona Sul", "lat": -23.6500, "lon": -46.6800,
+                 "score": 85, "populacao": obter_populacao_real("Campo Grande") or 117331,
+                 "renda_media": 4500, "motivo": "Similar ao Campo Belo, alta renda"},
+            {"bairro": "Saúde", "zona": "Zona Sul", "lat": -23.6200, "lon": -46.6300,
+             "score": 82, "populacao": obter_populacao_real("Saúde") or 130000,
+             "renda_media": 4200, "motivo": "Próximo ao Jabaquara, crescimento"},
+            {"bairro": "Cursino", "zona": "Zona Sul", "lat": -23.6100, "lon": -46.6000,
+             "score": 78, "populacao": obter_populacao_real("Cursino") or 110000,
+             "renda_media": 3800, "motivo": "Entre Vila Prudente e Jabaquara"},
+            {"bairro": "Planalto Paulista", "zona": "Zona Sul", "lat": -23.5800, "lon": -46.6500,
+             "score": 80, "populacao": obter_populacao_real("Planalto Paulista") or 85000,
+             "renda_media": 4800, "motivo": "Próximo ao Jardim Paulista"},
+
+            # Zona Oeste (Expansão)
+            {"bairro": "Butantã", "zona": "Zona Oeste", "lat": -23.5700, "lon": -46.7300,
+             "score": 88, "populacao": obter_populacao_real("Butantã") or 51776,
+             "renda_media": 5200, "motivo": "Próximo a Pinheiros, alta renda"},
+            {"bairro": "Rio Pequeno", "zona": "Zona Oeste", "lat": -23.5500, "lon": -46.7400,
+             "score": 75, "populacao": obter_populacao_real("Rio Pequeno") or 131664,
+             "renda_media": 3500, "motivo": "Entre Lapa e Pinheiros"},
+            {"bairro": "Jaguaré", "zona": "Zona Oeste", "lat": -23.5200, "lon": -46.7500,
+             "score": 72, "populacao": obter_populacao_real("Jaguaré") or 50000,
+             "renda_media": 3200, "motivo": "Próximo à Vila Leopoldina"},
+
+            # Zona Norte (Oportunidade)
+            {"bairro": "Casa Verde", "zona": "Zona Norte", "lat": -23.4900, "lon": -46.6500,
+             "score": 70, "populacao": obter_populacao_real("Casa Verde") or 80147,
+             "renda_media": 3000, "motivo": "Próximo ao Tucuruvi"},
+            {"bairro": "Limão", "zona": "Zona Norte", "lat": -23.4800, "lon": -46.6900,
+             "score": 68, "populacao": obter_populacao_real("Limão") or 82257,
+             "renda_media": 2800, "motivo": "Entre Freguesia do Ó e Casa Verde"},
+            {"bairro": "Vila Guilherme", "zona": "Zona Norte", "lat": -23.4700, "lon": -46.6100,
+             "score": 72, "populacao": obter_populacao_real("Vila Guilherme") or 55000,
+             "renda_media": 3200, "motivo": "Próximo ao Tucuruvi"},
+            {"bairro": "Vila Maria", "zona": "Zona Norte", "lat": -23.5100, "lon": -46.5900,
+             "score": 74, "populacao": obter_populacao_real("Vila Maria") or 115000,
+             "renda_media": 3400, "motivo": "Expansão da Zona Norte"},
+
+            # Zona Leste (Crescimento)
+            {"bairro": "Mooca", "zona": "Zona Leste", "lat": -23.5500, "lon": -46.6000,
+             "score": 76, "populacao": obter_populacao_real("Moóca") or 81592,
+             "renda_media": 3600, "motivo": "Próximo ao Ipiranga"},
+            {"bairro": "Belém", "zona": "Zona Leste", "lat": -23.5400, "lon": -46.5900,
+             "score": 74, "populacao": obter_populacao_real("Belém") or 56454,
+             "renda_media": 3400, "motivo": "Entre Mooca e Tatuapé"},
+            {"bairro": "Penha", "zona": "Zona Leste", "lat": -23.5300, "lon": -46.5400,
+             "score": 71, "populacao": obter_populacao_real("Penha") or 133403,
+             "renda_media": 3100, "motivo": "Expansão da Zona Leste"},
+            {"bairro": "Vila Formosa", "zona": "Zona Leste", "lat": -23.5600, "lon": -46.5500,
+             "score": 73, "populacao": obter_populacao_real("Vila Formosa") or 95000,
+             "renda_media": 3300, "motivo": "Próximo ao Tatuapé"},
+
+            # Centro Expandido
+            {"bairro": "Bela Vista", "zona": "Centro", "lat": -23.5600, "lon": -46.6400,
+             "score": 79, "populacao": obter_populacao_real("Bela Vista") or 70000,
+             "renda_media": 4000, "motivo": "Centro expandido, próximo aos Jardins"},
+            {"bairro": "Liberdade", "zona": "Centro", "lat": -23.5600, "lon": -46.6300,
+             "score": 77, "populacao": obter_populacao_real("Liberdade") or 76245,
+             "renda_media": 3800, "motivo": "Centro, movimento comercial"},
+            {"bairro": "Aclimação", "zona": "Centro", "lat": -23.5700, "lon": -46.6300,
+             "score": 75, "populacao": obter_populacao_real("Aclimação") or 15000,
+             "renda_media": 4200, "motivo": "Próximo à Vila Mariana"},
+
+            # Zona Sul Expandida
+                {"bairro": "Santo Amaro", "zona": "Zona Sul", "lat": -23.6500, "lon": -46.7100,
+                 "score": 81, "populacao": obter_populacao_real("Santo Amaro") or 70000,
+                 "renda_media": 4300, "motivo": "Centro comercial, próximo ao Brooklin"},
+                {"bairro": "Cidade Ademar", "zona": "Zona Sul", "lat": -23.6700, "lon": -46.6400,
+                 "score": 65, "populacao": obter_populacao_real("Cidade Ademar") or 270000,
+                 "renda_media": 2500, "motivo": "Grande população, próximo ao Jabaquara"}
+            ]
+
+        elif municipio_selecionado == "Rio de Janeiro-RJ":
+            franquias_sp_atuais = [
+                {"bairro": "Ilha do Governador", "zona": "Zona Norte", "lat": -22.8100, "lon": -43.2000},
+                {"bairro": "Nova Friburgo Centro", "zona": "Região Serrana", "lat": -22.2819, "lon": -42.5312},
+                {"bairro": "Bangú", "zona": "Zona Oeste", "lat": -22.8700, "lon": -43.4700},
+                {"bairro": "Botafogo", "zona": "Zona Sul", "lat": -22.9519, "lon": -43.1875},
+                {"bairro": "Campo Grande", "zona": "Zona Oeste", "lat": -22.9056, "lon": -43.5611},
+                {"bairro": "Copacabana", "zona": "Zona Sul", "lat": -22.9711, "lon": -43.1822},
+                {"bairro": "Flamengo", "zona": "Zona Sul", "lat": -22.9322, "lon": -43.1759},
+                {"bairro": "Freguesia", "zona": "Zona Oeste", "lat": -22.9300, "lon": -43.3400},
+                {"bairro": "Ipanema", "zona": "Zona Sul", "lat": -22.9838, "lon": -43.2096},
+                {"bairro": "Jardim Botânico", "zona": "Zona Sul", "lat": -22.9661, "lon": -43.2081},
+                {"bairro": "Leblon", "zona": "Zona Sul", "lat": -22.9840, "lon": -43.2240},
+                {"bairro": "Maracanã", "zona": "Zona Norte", "lat": -22.9122, "lon": -43.2302},
+                {"bairro": "Méier", "zona": "Zona Norte", "lat": -22.9026, "lon": -43.2784},
+                {"bairro": "Penha", "zona": "Zona Norte", "lat": -22.8400, "lon": -43.2800},
+                {"bairro": "Recreio dos Bandeirantes", "zona": "Zona Oeste", "lat": -23.0267, "lon": -43.4412},
+                {"bairro": "Taquara", "zona": "Zona Oeste", "lat": -22.9200, "lon": -43.3800},
+                {"bairro": "Tijuca", "zona": "Zona Norte", "lat": -22.9249, "lon": -43.2277},
+                {"bairro": "Vila Isabel", "zona": "Zona Norte", "lat": -22.9154, "lon": -43.2425},
+                {"bairro": "Vila Valqueire", "zona": "Zona Oeste", "lat": -22.8900, "lon": -43.3700}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Laranjeiras", "zona": "Zona Sul", "lat": -22.9364, "lon": -43.1859,
+                 "score": 88, "populacao": 45000, "renda_media": 5500, "motivo": "Zona Sul, próximo ao centro"},
+                {"bairro": "Urca", "zona": "Zona Sul", "lat": -22.9533, "lon": -43.1656,
+                 "score": 85, "populacao": 7000, "renda_media": 8000, "motivo": "Zona Sul nobre, exclusiva"},
+                {"bairro": "Gávea", "zona": "Zona Sul", "lat": -22.9792, "lon": -43.2267,
+                 "score": 82, "populacao": 15000, "renda_media": 7200, "motivo": "Alta renda, próximo PUC"},
+                {"bairro": "Barra da Tijuca", "zona": "Zona Oeste", "lat": -23.0045, "lon": -43.3642,
+                 "score": 80, "populacao": 300000, "renda_media": 5200, "motivo": "Grande população, crescimento"},
+                {"bairro": "Jacarepaguá", "zona": "Zona Oeste", "lat": -22.9400, "lon": -43.3700,
+                 "score": 75, "populacao": 157000, "renda_media": 3800, "motivo": "Expansão urbana"},
+                {"bairro": "Andaraí", "zona": "Zona Norte", "lat": -22.9300, "lon": -43.2500,
+                 "score": 78, "populacao": 21000, "renda_media": 4200, "motivo": "Próximo à Tijuca"}
+            ]
+
+        elif municipio_selecionado == "Brasília-DF":
+            franquias_sp_atuais = [
+                {"bairro": "Asa Norte", "zona": "Plano Piloto", "lat": -15.7801, "lon": -47.8825}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Asa Sul", "zona": "Plano Piloto", "lat": -15.8267, "lon": -47.9218,
+                 "score": 92, "populacao": 90000, "renda_media": 8500, "motivo": "Plano Piloto, alta renda"},
+                {"bairro": "Lago Sul", "zona": "Plano Piloto", "lat": -15.8467, "lon": -47.8625,
+                 "score": 90, "populacao": 30000, "renda_media": 12000, "motivo": "Área nobre, alta renda"},
+                {"bairro": "Lago Norte", "zona": "Plano Piloto", "lat": -15.7267, "lon": -47.8825,
+                 "score": 88, "populacao": 35000, "renda_media": 10000, "motivo": "Área nobre"},
+                {"bairro": "Sudoeste", "zona": "Plano Piloto", "lat": -15.7967, "lon": -47.9325,
+                 "score": 85, "populacao": 55000, "renda_media": 8500, "motivo": "Região central"},
+                {"bairro": "Águas Claras", "zona": "RA", "lat": -15.8344, "lon": -48.0266,
+                 "score": 82, "populacao": 120000, "renda_media": 6000, "motivo": "Região moderna"},
+                {"bairro": "Taguatinga", "zona": "RA", "lat": -15.8267, "lon": -48.0566,
+                 "score": 80, "populacao": 220000, "renda_media": 4500, "motivo": "Grande população"},
+                {"bairro": "Guará", "zona": "RA", "lat": -15.8367, "lon": -47.9666,
+                 "score": 78, "populacao": 140000, "renda_media": 4800, "motivo": "Próximo ao centro"}
+            ]
+
+        elif municipio_selecionado == "Belo Horizonte-MG":
+            franquias_sp_atuais = [
+                {"bairro": "Belvedere", "zona": "Zona Sul", "lat": -19.9500, "lon": -43.9600},
+                {"bairro": "Guarani", "zona": "Zona Norte", "lat": -19.8700, "lon": -43.9500},
+                {"bairro": "Savassi", "zona": "Centro-Sul", "lat": -19.9400, "lon": -43.9300}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Lourdes", "zona": "Centro-Sul", "lat": -19.9350, "lon": -43.9400,
+                 "score": 88, "populacao": 7000, "renda_media": 8500, "motivo": "Bairro nobre, alta renda"},
+                {"bairro": "Funcionários", "zona": "Centro-Sul", "lat": -19.9300, "lon": -43.9350,
+                 "score": 85, "populacao": 10000, "renda_media": 7200, "motivo": "Centro expandido"},
+                {"bairro": "Santo Agostinho", "zona": "Centro-Sul", "lat": -19.9450, "lon": -43.9350,
+                 "score": 82, "populacao": 5000, "renda_media": 7800, "motivo": "Próximo ao Savassi"},
+                {"bairro": "Buritis", "zona": "Zona Oeste", "lat": -19.9800, "lon": -44.0200,
+                 "score": 80, "populacao": 25000, "renda_media": 6000, "motivo": "Bairro planejado"},
+                {"bairro": "Pampulha", "zona": "Zona Norte", "lat": -19.8600, "lon": -43.9700,
+                 "score": 78, "populacao": 15000, "renda_media": 5500, "motivo": "Região universitária"}
+            ]
+
+        elif municipio_selecionado == "Salvador-BA":
+            franquias_sp_atuais = [
+                {"bairro": "Horto Florestal", "zona": "Zona Norte", "lat": -12.9500, "lon": -38.4600},
+                {"bairro": "Pituba", "zona": "Zona Sul", "lat": -12.9800, "lon": -38.4400}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Barra", "zona": "Zona Sul", "lat": -13.0100, "lon": -38.5200,
+                 "score": 88, "populacao": 50000, "renda_media": 6500, "motivo": "Orla, alta renda"},
+                {"bairro": "Ondina", "zona": "Zona Sul", "lat": -13.0000, "lon": -38.5100,
+                 "score": 85, "populacao": 15000, "renda_media": 7000, "motivo": "Bairro nobre"},
+                {"bairro": "Rio Vermelho", "zona": "Zona Sul", "lat": -13.0050, "lon": -38.4900,
+                 "score": 82, "populacao": 25000, "renda_media": 5800, "motivo": "Boêmio, classe média alta"},
+                {"bairro": "Itaigara", "zona": "Zona Sul", "lat": -12.9900, "lon": -38.4700,
+                 "score": 80, "populacao": 20000, "renda_media": 6200, "motivo": "Próximo à Pituba"},
+                {"bairro": "Caminho das Árvores", "zona": "Zona Sul", "lat": -12.9850, "lon": -38.4650,
+                 "score": 78, "populacao": 12000, "renda_media": 6800, "motivo": "Comercial, alta renda"}
+            ]
+
+        elif municipio_selecionado == "Fortaleza-CE":
+            franquias_sp_atuais = [
+                {"bairro": "Cambeba", "zona": "Zona Sul", "lat": -3.8200, "lon": -38.4800},
+                {"bairro": "Fátima", "zona": "Centro", "lat": -3.7400, "lon": -38.5300},
+                {"bairro": "Presidente Kennedy", "zona": "Zona Oeste", "lat": -3.7600, "lon": -38.5800}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Meireles", "zona": "Zona Leste", "lat": -3.7300, "lon": -38.4900,
+                 "score": 88, "populacao": 40000, "renda_media": 6000, "motivo": "Orla, alta renda"},
+                {"bairro": "Aldeota", "zona": "Zona Leste", "lat": -3.7400, "lon": -38.5000,
+                 "score": 85, "populacao": 50000, "renda_media": 5500, "motivo": "Bairro nobre"},
+                {"bairro": "Cocó", "zona": "Zona Sul", "lat": -3.7800, "lon": -38.4700,
+                 "score": 82, "populacao": 25000, "renda_media": 5200, "motivo": "Próximo ao shopping"},
+                {"bairro": "Papicu", "zona": "Zona Leste", "lat": -3.7500, "lon": -38.4600,
+                 "score": 80, "populacao": 35000, "renda_media": 4800, "motivo": "Orla, crescimento"},
+                {"bairro": "Dionísio Torres", "zona": "Centro", "lat": -3.7500, "lon": -38.5200,
+                 "score": 78, "populacao": 30000, "renda_media": 4500, "motivo": "Centro expandido"}
+            ]
+
+        elif municipio_selecionado == "Porto Alegre-RS":
+            franquias_sp_atuais = [
+                {"bairro": "Boa Vista", "zona": "Centro", "lat": -30.0300, "lon": -51.2100},
+                {"bairro": "Moinhos de Vento", "zona": "Zona Leste", "lat": -30.0200, "lon": -51.1900},
+                {"bairro": "Petrópolis", "zona": "Zona Norte", "lat": -30.0100, "lon": -51.2000}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Bela Vista", "zona": "Zona Leste", "lat": -30.0250, "lon": -51.1850,
+                 "score": 88, "populacao": 15000, "renda_media": 7500, "motivo": "Bairro nobre"},
+                {"bairro": "Auxiliadora", "zona": "Zona Leste", "lat": -30.0150, "lon": -51.1950,
+                 "score": 85, "populacao": 12000, "renda_media": 7000, "motivo": "Alta renda"},
+                {"bairro": "Rio Branco", "zona": "Zona Leste", "lat": -30.0350, "lon": -51.1800,
+                 "score": 82, "populacao": 18000, "renda_media": 6500, "motivo": "Próximo ao centro"},
+                {"bairro": "Menino Deus", "zona": "Centro", "lat": -30.0400, "lon": -51.2200,
+                 "score": 80, "populacao": 20000, "renda_media": 6000, "motivo": "Centro expandido"},
+                {"bairro": "Santana", "zona": "Zona Leste", "lat": -30.0200, "lon": -51.1800,
+                 "score": 78, "populacao": 25000, "renda_media": 5800, "motivo": "Próximo Moinhos de Vento"}
+            ]
+
+        else:
+            # Fallback genérico
+            franquias_sp_atuais = [
+                {"bairro": "Centro", "zona": "Centro", "lat": -23.5505, "lon": -46.6333}
+            ]
+
+            bairros_candidatos = [
+                {"bairro": "Bairro Nobre", "zona": "Zona Sul", "lat": -23.6205, "lon": -46.6533,
+                 "score": 85, "populacao": 80000, "renda_media": 5000, "motivo": "Alta renda"}
+            ]
+
+        # Informações dinâmicas por cidade (dados reais)
+        info_cidades = {
+            "São Paulo-SP": {
+                "atuais": 26, "potencial": 46, "adicional": 20, "cobertura": 57,
+                "dados_reais": df_populacao is not None
+            },
+            "Rio de Janeiro-RJ": {
+                "atuais": 19, "potencial": 25, "adicional": 6, "cobertura": 76,
+                "dados_reais": False
+            },
+            "Brasília-DF": {
+                "atuais": 1, "potencial": 8, "adicional": 7, "cobertura": 13,
+                "dados_reais": False
+            },
+            "Belo Horizonte-MG": {
+                "atuais": 3, "potencial": 8, "adicional": 5, "cobertura": 38,
+                "dados_reais": False
+            },
+            "Salvador-BA": {
+                "atuais": 2, "potencial": 7, "adicional": 5, "cobertura": 29,
+                "dados_reais": False
+            },
+            "Fortaleza-CE": {
+                "atuais": 3, "potencial": 8, "adicional": 5, "cobertura": 38,
+                "dados_reais": False
+            },
+            "Porto Alegre-RS": {
+                "atuais": 3, "potencial": 8, "adicional": 5, "cobertura": 38,
+                "dados_reais": False
+            }
+        }
+
+        info_cidade = info_cidades.get(municipio_selecionado, info_cidades["São Paulo-SP"])
+
+        # Status dos dados
+        if info_cidade["dados_reais"]:
+            st.success(f"""
+            **📊 DADOS REAIS CARREGADOS - {municipio_selecionado}:**
+            - **População por bairro:** SEADE 2023 ✅
+            - **Total de bairros:** {len(df_populacao)} distritos
+            - **Fonte:** Fundação SEADE - Governo SP
+            """)
+        else:
+            st.warning(f"⚠️ {municipio_selecionado}: Usando dados estimados - dados reais em desenvolvimento")
+
+        st.info(f"""
+        **📍 SITUAÇÃO ATUAL EM {municipio_selecionado.upper()}:**
+        - **Franquias atuais:** {info_cidade["atuais"]} unidades
+        - **Potencial total:** {info_cidade["potencial"]} franquias
+        - **Oportunidade:** +{info_cidade["adicional"]} franquias adicionais
+        - **Cobertura atual:** {info_cidade["cobertura"]}% do potencial
+        """)
+
+        # Seletor de visualização
+        col1, col2 = st.columns([2, 1])
+
+        with col2:
+            visualizacao = st.selectbox(
+                "Tipo de análise:",
+                ["Mapa Geral", "Top Candidatos", "Por Zona", "Análise Detalhada"]
+            )
+
+            filtro_score = st.slider(
+                "Score mínimo:",
+                min_value=60,
+                max_value=95,
+                value=70,
+                step=5
+            )
+
+        with col1:
+            if visualizacao == "Mapa Geral":
+                # Criar mapa com franquias atuais e candidatos
+                import plotly.graph_objects as go
+
+                fig = go.Figure()
+
+                # Franquias atuais (azul)
+                lats_atuais = [f["lat"] for f in franquias_sp_atuais]
+                lons_atuais = [f["lon"] for f in franquias_sp_atuais]
+                nomes_atuais = [f["bairro"] for f in franquias_sp_atuais]
+
+                fig.add_trace(go.Scattermapbox(
+                    lat=lats_atuais,
+                    lon=lons_atuais,
+                    mode='markers',
+                    marker=dict(size=12, color='blue'),
+                    text=nomes_atuais,
+                    name='Franquias Atuais',
+                    hovertemplate='<b>%{text}</b><br>Status: Ativa<extra></extra>'
+                ))
+
+                # Candidatos filtrados (verde)
+                candidatos_filtrados = [b for b in bairros_candidatos if b["score"] >= filtro_score]
+                if candidatos_filtrados:
+                    lats_candidatos = [c["lat"] for c in candidatos_filtrados]
+                    lons_candidatos = [c["lon"] for c in candidatos_filtrados]
+                    nomes_candidatos = [f"{c['bairro']} (Score: {c['score']})" for c in candidatos_filtrados]
+
+                    fig.add_trace(go.Scattermapbox(
+                        lat=lats_candidatos,
+                        lon=lons_candidatos,
+                        mode='markers',
+                        marker=dict(size=10, color='green'),
+                        text=nomes_candidatos,
+                        name='Candidatos',
+                        hovertemplate='<b>%{text}</b><br>Status: Candidato<extra></extra>'
+                    ))
+
+                # Configurações de mapa por cidade
+                config_mapas = {
+                    "São Paulo-SP": {"lat": -23.5505, "lon": -46.6333, "zoom": 10},
+                    "Rio de Janeiro-RJ": {"lat": -22.9068, "lon": -43.1729, "zoom": 11},
+                    "Brasília-DF": {"lat": -15.7942, "lon": -47.8822, "zoom": 10},
+                    "Belo Horizonte-MG": {"lat": -19.9167, "lon": -43.9345, "zoom": 11},
+                    "Salvador-BA": {"lat": -12.9714, "lon": -38.5014, "zoom": 11},
+                    "Fortaleza-CE": {"lat": -3.7319, "lon": -38.5267, "zoom": 11},
+                    "Porto Alegre-RS": {"lat": -30.0346, "lon": -51.2177, "zoom": 11},
+                    "Curitiba-PR": {"lat": -25.4284, "lon": -49.2733, "zoom": 11}
+                }
+
+                config_mapa = config_mapas.get(municipio_selecionado, config_mapas["São Paulo-SP"])
+
+                fig.update_layout(
+                    mapbox=dict(
+                        style="open-street-map",
+                        center=dict(lat=config_mapa["lat"], lon=config_mapa["lon"]),
+                        zoom=config_mapa["zoom"]
+                    ),
+                    height=600,
+                    title=f"🗺️ Franquias Atuais vs Bairros Candidatos - {municipio_selecionado}"
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+            elif visualizacao == "Top Candidatos":
+                # Lista dos melhores candidatos
+                candidatos_filtrados = [b for b in bairros_candidatos if b["score"] >= filtro_score]
+                candidatos_ordenados = sorted(candidatos_filtrados, key=lambda x: x["score"], reverse=True)
+
+                st.subheader(f"🏆 Top {len(candidatos_ordenados)} Bairros Candidatos")
+
+                for i, candidato in enumerate(candidatos_ordenados[:10], 1):
+                    with st.expander(f"{i}º. {candidato['bairro']} - Score: {candidato['score']}"):
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            st.write(f"**Zona:** {candidato['zona']}")
+                            st.write(f"**População:** {candidato['populacao']:,} hab")
+                            st.write(f"**Renda Média:** R$ {candidato['renda_media']:,}")
+                        with col_b:
+                            st.write(f"**Motivo:** {candidato['motivo']}")
+                            if candidato['score'] >= 85:
+                                st.success("🟢 Prioridade Alta")
+                            elif candidato['score'] >= 75:
+                                st.warning("🟡 Prioridade Média")
+                            else:
+                                st.info("🔵 Prioridade Baixa")
+
+            elif visualizacao == "Por Zona":
+                # Análise por zona
+                st.subheader("🗺️ Análise por Zona de São Paulo")
+
+                # Agrupar por zona
+                zonas_atuais = {}
+                zonas_candidatos = {}
+
+                for f in franquias_sp_atuais:
+                    zona = f["zona"]
+                    if zona not in zonas_atuais:
+                        zonas_atuais[zona] = 0
+                    zonas_atuais[zona] += 1
+
+                candidatos_filtrados = [b for b in bairros_candidatos if b["score"] >= filtro_score]
+                for c in candidatos_filtrados:
+                    zona = c["zona"]
+                    if zona not in zonas_candidatos:
+                        zonas_candidatos[zona] = []
+                    zonas_candidatos[zona].append(c)
+
+                # Mostrar por zona
+                zonas_ordem = ["Centro", "Zona Sul", "Zona Oeste", "Zona Norte", "Zona Leste"]
+
+                for zona in zonas_ordem:
+                    with st.expander(f"📍 {zona}"):
+                        col_atual, col_candidatos = st.columns(2)
+
+                        with col_atual:
+                            st.write(f"**Franquias Atuais:** {zonas_atuais.get(zona, 0)}")
+                            atuais_zona = [f["bairro"] for f in franquias_sp_atuais if f["zona"] == zona]
+                            if atuais_zona:
+                                st.write("• " + "\n• ".join(atuais_zona))
+
+                        with col_candidatos:
+                            candidatos_zona = zonas_candidatos.get(zona, [])
+                            st.write(f"**Candidatos:** {len(candidatos_zona)}")
+                            if candidatos_zona:
+                                for c in sorted(candidatos_zona, key=lambda x: x["score"], reverse=True)[:3]:
+                                    st.write(f"• {c['bairro']} (Score: {c['score']})")
+
+            elif visualizacao == "Análise Detalhada":
+                # Análise detalhada com métricas
+                st.subheader("📊 Análise Detalhada dos Candidatos")
+
+                candidatos_filtrados = [b for b in bairros_candidatos if b["score"] >= filtro_score]
+
+                if candidatos_filtrados:
+                    # Criar DataFrame para análise
+                    df_candidatos = pd.DataFrame(candidatos_filtrados)
+
+                    # Métricas gerais
+                    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+
+                    with col_m1:
+                        st.metric("Total Candidatos", len(candidatos_filtrados))
+
+                    with col_m2:
+                        score_medio = df_candidatos['score'].mean()
+                        st.metric("Score Médio", f"{score_medio:.1f}")
+
+                    with col_m3:
+                        pop_total = df_candidatos['populacao'].sum()
+                        st.metric("População Total", f"{pop_total:,}")
+
+                    with col_m4:
+                        renda_media = df_candidatos['renda_media'].mean()
+                        st.metric("Renda Média", f"R$ {renda_media:,.0f}")
+
+                    # Tabela detalhada
+                    st.subheader("📋 Ranking Detalhado")
+
+                    df_display = df_candidatos.copy()
+                    df_display = df_display.sort_values('score', ascending=False)
+                    df_display['renda_media'] = df_display['renda_media'].apply(lambda x: f"R$ {x:,}")
+                    df_display['populacao'] = df_display['populacao'].apply(lambda x: f"{x:,}")
+
+                    df_display = df_display.rename(columns={
+                        'bairro': 'Bairro',
+                        'zona': 'Zona',
+                        'score': 'Score',
+                        'populacao': 'População',
+                        'renda_media': 'Renda Média',
+                        'motivo': 'Justificativa'
+                    })
+
+                    st.dataframe(
+                        df_display[['Bairro', 'Zona', 'Score', 'População', 'Renda Média', 'Justificativa']],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                    # Gráfico de distribuição por zona
+                    st.subheader("📊 Distribuição por Zona")
+
+                    zona_counts = df_candidatos['zona'].value_counts()
+
+                    fig_zona = px.bar(
+                        x=zona_counts.index,
+                        y=zona_counts.values,
+                        title="Número de Candidatos por Zona",
+                        labels={'x': 'Zona', 'y': 'Número de Candidatos'}
+                    )
+
+                    st.plotly_chart(fig_zona, use_container_width=True)
+
+        # Resumo e próximos passos
+        st.subheader(f"🎯 Resumo e Recomendações - {municipio_selecionado}")
+
+        col_res1, col_res2 = st.columns(2)
+
+        # Top 5 dinâmico por cidade
+        top_5_cidades = {
+            "São Paulo-SP": [
+                "1. **Butantã** - Score 88 (Próximo Pinheiros)",
+                "2. **Campo Grande** - Score 85 (Similar Campo Belo)",
+                "3. **Saúde** - Score 82 (Próximo Jabaquara)",
+                "4. **Santo Amaro** - Score 81 (Centro comercial)",
+                "5. **Planalto Paulista** - Score 80 (Próximo Jardim Paulista)"
+            ],
+            "Rio de Janeiro-RJ": [
+                "1. **Laranjeiras** - Score 88 (Zona Sul, próximo centro)",
+                "2. **Urca** - Score 85 (Zona Sul nobre, exclusiva)",
+                "3. **Gávea** - Score 82 (Alta renda, próximo PUC)",
+                "4. **Barra da Tijuca** - Score 80 (Grande população)",
+                "5. **Andaraí** - Score 78 (Próximo à Tijuca)"
+            ],
+            "Brasília-DF": [
+                "1. **Asa Sul** - Score 92 (Plano Piloto, alta renda)",
+                "2. **Lago Sul** - Score 90 (Área nobre, alta renda)",
+                "3. **Lago Norte** - Score 88 (Área nobre)",
+                "4. **Sudoeste** - Score 85 (Região central)",
+                "5. **Águas Claras** - Score 82 (Região moderna)"
+            ],
+            "Belo Horizonte-MG": [
+                "1. **Lourdes** - Score 88 (Bairro nobre, alta renda)",
+                "2. **Funcionários** - Score 85 (Centro expandido)",
+                "3. **Santo Agostinho** - Score 82 (Próximo ao Savassi)",
+                "4. **Buritis** - Score 80 (Bairro planejado)",
+                "5. **Pampulha** - Score 78 (Região universitária)"
+            ],
+            "Salvador-BA": [
+                "1. **Barra** - Score 88 (Orla, alta renda)",
+                "2. **Ondina** - Score 85 (Bairro nobre)",
+                "3. **Rio Vermelho** - Score 82 (Boêmio, classe média alta)",
+                "4. **Itaigara** - Score 80 (Próximo à Pituba)",
+                "5. **Caminho das Árvores** - Score 78 (Comercial, alta renda)"
+            ],
+            "Fortaleza-CE": [
+                "1. **Meireles** - Score 88 (Orla, alta renda)",
+                "2. **Aldeota** - Score 85 (Bairro nobre)",
+                "3. **Cocó** - Score 82 (Próximo ao shopping)",
+                "4. **Papicu** - Score 80 (Orla, crescimento)",
+                "5. **Dionísio Torres** - Score 78 (Centro expandido)"
+            ],
+            "Porto Alegre-RS": [
+                "1. **Bela Vista** - Score 88 (Bairro nobre)",
+                "2. **Auxiliadora** - Score 85 (Alta renda)",
+                "3. **Rio Branco** - Score 82 (Próximo ao centro)",
+                "4. **Menino Deus** - Score 80 (Centro expandido)",
+                "5. **Santana** - Score 78 (Próximo Moinhos de Vento)"
+            ]
+        }
+
+        top_5_atual = top_5_cidades.get(municipio_selecionado, [
+            "1. **Bairro Nobre 1** - Score 85 (Alta renda)",
+            "2. **Bairro Central 1** - Score 80 (Centro expandido)",
+            "3. **Bairro Norte 1** - Score 75 (Expansão norte)",
+            "4. **Em desenvolvimento** - Dados sendo coletados",
+            "5. **Em desenvolvimento** - Dados sendo coletados"
+        ])
+
+        with col_res1:
+            st.markdown(f"""
+            <div style="background-color: #d4edda; padding: 20px; border-radius: 10px; border-left: 5px solid #28a745;">
+                <h3 style="color: #155724; margin-bottom: 15px;">🏆 TOP 5 PRIORIDADES - {municipio_selecionado}</h3>
+            """, unsafe_allow_html=True)
+
+            for i, item in enumerate(top_5_atual, 1):
+                # Remove o número do início se já existir
+                item_clean = item.split('. ', 1)[1] if '. ' in item else item
+                bairro = item_clean.split(' - ')[0].replace('**', '')
+                detalhes = item_clean.split(' - ')[1] if ' - ' in item_clean else ''
+
+                st.markdown(f"""
+                <div style="margin-bottom: 12px; padding: 10px; background-color: white; border-radius: 5px; border-left: 3px solid #28a745;">
+                    <div style="display: flex; align-items: center;">
+                        <div style="background-color: #28a745; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold; font-size: 12px;">
+                            {i}
+                        </div>
+                        <div>
+                            <strong style="color: #155724; font-size: 16px;">{bairro}</strong><br>
+                            <span style="color: #6c757d; font-size: 14px;">{detalhes}</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_res2:
+            # Informações complementares sobre a cidade
+            info_cidade = info_cidades.get(municipio_selecionado, {})
+
+            st.markdown(f"""
+            <div style="background-color: #e7f3ff; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;">
+                <h3 style="color: #004085; margin-bottom: 15px;">📊 Resumo da Cidade</h3>
+                <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: bold; color: #004085;">Franquias Atuais:</span>
+                        <span style="color: #28a745; font-weight: bold;">{info_cidade.get('atuais', 0)} unidades</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: bold; color: #004085;">Potencial Total:</span>
+                        <span style="color: #007bff; font-weight: bold;">{info_cidade.get('potencial', 0)} franquias</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: bold; color: #004085;">Oportunidades:</span>
+                        <span style="color: #fd7e14; font-weight: bold;">+{info_cidade.get('adicional', 0)} franquias</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; color: #004085;">Cobertura:</span>
+                        <span style="color: #6f42c1; font-weight: bold;">{info_cidade.get('cobertura', 0)}% do potencial</span>
+                    </div>
+                </div>
+                <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; border-left: 3px solid #ffc107;">
+                    <small style="color: #856404;">
+                        <strong>💡 Insight:</strong>
+                        {'Mercado quase saturado - foco em bairros nobres restantes' if info_cidade.get('cobertura', 0) > 70
+                         else 'Grande potencial de expansão - priorizar bairros de alta renda' if info_cidade.get('cobertura', 0) < 30
+                         else 'Expansão equilibrada - focar em bairros estratégicos'}
+                    </small>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+
 
 if __name__ == "__main__":
     main()
